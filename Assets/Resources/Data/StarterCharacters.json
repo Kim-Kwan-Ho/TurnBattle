@@ -1,0 +1,53 @@
+{
+  "Characters": [
+    {
+      "ChID": 1,
+      "ChLevel": 1,
+      "ChHp": 100,
+      "ChDamage": 80,
+      "ChArmor": 2,
+      "ChSpd": 2
+    },
+    {
+      "ChID": 2,
+      "ChLevel": 1,
+      "ChHp": 150,
+      "ChDamage": 60,
+      "ChArmor": 1,
+      "ChSpd": 1
+    },
+    {
+      "ChID": 3,
+      "ChLevel": 1,
+      "ChHp": 200,
+      "ChDamage": 40,
+      "ChArmor": 5,
+      "ChSpd": 5
+    },
+    {
+      "ChID": 4,
+      "ChLevel": 1,
+      "ChHp": 250,
+      "ChDamage": 20,
+      "ChArmor": 5,
+      "ChSpd": 5
+    },
+    {
+      "ChID": 5,
+      "ChLevel": 1,
+      "ChHp": 300,
+      "ChDamage": 10,
+      "ChArmor": 5,
+      "ChSpd": 5
+    },
+    {
+      "ChID": 6,
+      "ChLevel": 1,
+      "ChHp": 350,
+      "ChDamage": 5,
+      "ChArmor": 5,
+      "ChSpd": 5
+    }
+  ]
+  
+}
