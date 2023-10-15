@@ -11,24 +11,24 @@ public class BattleScene : BaseScene
     {
         if (base.Init() == false)
             return false;
-        Managers.Battle.SetBattleObjects();
+        Managers.Battle.MakeBattleRoom();
         SceneType = Define.Scene.Battle;
         
-        stBattleReadyInfo ready = new stBattleReadyInfo
+        stBattleReady ready = new stBattleReady
         {
-            MsgID = ServerData.MessageID.BattleReadyInfo,
-            PacketSize = (ushort)Marshal.SizeOf(typeof(stBattleReadyInfo)),
+            MsgID = ServerData.MessageID.BattleReady,
+            PacketSize = (ushort)Marshal.SizeOf(typeof(stBattleReady)),
             ID = Managers.Data.ID,
-            RoomID = Managers.Data.RoomID,
+            RoomID = (ushort)Managers.Battle.RoomID,
             IsReady = true
 
         };
-        Managers.Network.TcpSendMessage<stBattleReadyInfo>(ready);
+        Managers.Network.TcpSendMessage<stBattleReady>(ready);
 
 
         return true;
     }
 
-
+        
 
 }

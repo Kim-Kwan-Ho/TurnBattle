@@ -19,26 +19,29 @@ namespace ServerData
         public const int TempBufferSize = 1048;
         public const int MainCharacterCount = 3;
         public const int MaxCharacterCount = 50;
+        public const UInt16 PlayerRegisterGold = 1500;
+        public const UInt16 PlayerRegisterToken = 2000;
+
     }
-    public static class MessageID
+    public static class MessageID // 헤더 메시지 정보
     {
         public const ushort Header = 0x01;
         public const ushort LoginRegister = 0x02;
         public const ushort PlayerInfo = 0x03;
         public const ushort MatchPlayerInfo = 0x04;
-        public const ushort BattleRoomCharactersInfo = 0x05;
-        public const ushort BattleReadyInfo = 0x06;
+        public const ushort BattleRoomInfo = 0x05;
+        public const ushort BattleReady = 0x06;
         public const ushort BattleStart = 0x07;
-        public const ushort BattleMyOrder = 0x08;
-        public const ushort BattleInfo = 0x09;
+        public const ushort BattlePlayerOrderInfo = 0x08;
+        public const ushort BattleOrdersInfo = 0x09;
         public const ushort BattleParticularInfo = 0x10;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct stHeader // 패킷 초반 메시지 정보 (공통)
+    public struct stHeader // 헤더 메시지 (모든 통신 구조체 앞 패킷에 구성) 
     {
         [MarshalAs(UnmanagedType.U2, SizeConst = 2)]
-        public UInt16 MsgID; // 
+        public UInt16 MsgID;
         [MarshalAs(UnmanagedType.U2, SizeConst = 2)]
         public UInt16 PacketSize;
     }
@@ -60,7 +63,7 @@ namespace ServerData
         public bool Succeed;
     }
 
-    [DataContract]
+    [Serializable]
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct stPlayerInfo // 플레이어 정보
     {
@@ -73,32 +76,26 @@ namespace ServerData
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)ServerData.Constants.MaxPasswordByte)]
         public string Password;
         [MarshalAs(UnmanagedType.U4, SizeConst = 4)]
-        public UInt32 Gold;
+        public UInt32 GoldAmount;
         [MarshalAs(UnmanagedType.U4, SizeConst = 4)]
-        public UInt32 Token;
-
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = ServerData.Constants.MainCharacterCount)]
+        public UInt32 TokenCount;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = ServerData.Constants.MainCharacterCount)] // 대표 캐릭터
         public stCharacterInfo[] MainCharacters;
-
         [MarshalAs(UnmanagedType.U2, SizeConst = 2)]
-        public UInt16 ChsCount;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = ServerData.Constants.MaxCharacterCount)]
-        public stCharacterInfo[] Characters;
-
-        public stPlayerInfo(string id, string password)
+        public UInt16 CharacterCount;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = ServerData.Constants.MaxCharacterCount)] // 보유 캐릭터
+        public stCharacterInfo[] OwnedCharacters;
+        public stPlayerInfo(string id, string password) // 회원가입 시 Id, Password를 바탕으로 정보생성
         {
-            MsgID = ServerData.MessageID.PlayerInfo;
+            MsgID = MessageID.PlayerInfo;
             PacketSize = (ushort)Marshal.SizeOf(typeof(stPlayerInfo));
             ID = id;
             Password = password;
-            Gold = 1500;
-            Token = 2000;
-            ChsCount = 5;
-            MainCharacters = new stCharacterInfo[3];
-            Characters = new stCharacterInfo[ChsCount];
-
-
-
+            GoldAmount = Constants.PlayerRegisterGold;
+            TokenCount = Constants.PlayerRegisterToken;
+            CharacterCount = 0;
+            MainCharacters = new stCharacterInfo[Constants.MainCharacterCount];
+            OwnedCharacters = new stCharacterInfo[CharacterCount];
         }
     }
     [Serializable]
@@ -122,22 +119,22 @@ namespace ServerData
 
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct stMatchPlayerInfo // 매치 시작 및 나의 아이디
+    public struct stMatchPlayerInfo // 플레이어 매칭
     {
         [MarshalAs(UnmanagedType.U2, SizeConst = 2)]
         public UInt16 MsgID;
         [MarshalAs(UnmanagedType.U2, SizeConst = 2)]
         public UInt16 PacketSize;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)(ServerData.Constants.MaxNameByte))]
-        public string ID;
+        public string ID; // 나의 아이디
         [MarshalAs(UnmanagedType.Bool, SizeConst = 1)]
-        public bool Matching;
+        public bool Matching; // true => 매치 시작, false => 매치 취소
     }
 
 
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct stBattleRoomCharactersInfo // 배틀 정보
+    public struct stBattleRoomInfo // 배틀 정보
     {
         [MarshalAs(UnmanagedType.U2, SizeConst = 2)]
         public UInt16 MsgID;
@@ -160,13 +157,13 @@ namespace ServerData
     public struct stBattleTurnInfo // 캐릭터 순서
     {
         [MarshalAs(UnmanagedType.U2, SizeConst = 2)]
-        public UInt16 Id;
+        public UInt16 CharacterID;
         [MarshalAs(UnmanagedType.Bool, SizeConst = 1)]
         public bool IsPlayer1;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct stBattleReadyInfo // 플레이어가 씬을 로드했는지 (준비 완료)
+    public struct stBattleReady // 플레이어가 씬을 로드했는지 (준비 완료)
     {
         [MarshalAs(UnmanagedType.U2, SizeConst = 2)]
         public UInt16 MsgID;
@@ -193,7 +190,7 @@ namespace ServerData
 
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct stBattleMyOrder // 플레이어 캐릭터 행동 정보
+    public struct stBattlePlayerOrder // 플레이어 캐릭터 행동 정보
     {
         [MarshalAs(UnmanagedType.U2, SizeConst = 2)]
         public UInt16 MsgID;
@@ -225,21 +222,21 @@ namespace ServerData
 
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct stBattleInfo // 전투 정보 (한 턴)
+    public struct stBattleOrdersInfo // 전투 정보 (한 턴)
     {
         [MarshalAs(UnmanagedType.U2, SizeConst = 2)]
         public UInt16 MsgID;
         [MarshalAs(UnmanagedType.U2, SizeConst = 2)]
         public UInt16 PacketSize;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 6)]
-        public stBattleOrder[] Order;
+        public stBattleCharacterOrder[] Order;
         [MarshalAs(UnmanagedType.U2, SizeConst = 2)]
         public UInt16 GameState; // 0 - 계속 진행, 1 - 플레이어 1 승리, 2 - 플레이어 2 승리
 
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct stBattleOrder // 전투 정보 (한 캐릭터 턴)
+    public struct stBattleCharacterOrder // 전투 정보 (캐릭터)
     {
         [MarshalAs(UnmanagedType.Bool, SizeConst = 1)]
         public bool IsMyCharacter;

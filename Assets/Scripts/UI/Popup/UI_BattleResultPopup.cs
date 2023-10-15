@@ -40,7 +40,7 @@ public class UI_BattleResultPopup : UI_Popup
     public void GoHome()
     {
 
-        Managers.Battle.ResetBattle();
+        //Managers.Battle.ResetBattle();
         Managers.UI.CloseAllPopupUI();
         Managers.Scene.ChangeScene(Define.Scene.Base, true);
     }

@@ -21,13 +21,13 @@ public class BattleSystem : MonoBehaviour
     public static bool SelectAttackTarget = false;
 
     [Header("ServerOrder")]
-    private Queue<stBattleOrder> _orderQueue = new Queue<stBattleOrder>();
+    private Queue<stBattleCharacterOrder> _orderQueue = new Queue<stBattleCharacterOrder>();
     private Action _nextTurn = null;
 
     [Header("UI")]
     private UI_BattlePopup _battleUI = null;
 
-    [Header("Particular Info")] 
+    [Header("Particular Info")]
     private bool _infoArrived = false;
     private void Awake()
     {
@@ -38,8 +38,8 @@ public class BattleSystem : MonoBehaviour
 
     private void Start()
     {
-        Managers.Network.BattleCallBack -= PlayCharacterOrderByServer;
-        Managers.Network.BattleCallBack += PlayCharacterOrderByServer;
+        Managers.Network.BattleOrdersCallBack -= PlayCharacterOrderByServer;
+        Managers.Network.BattleOrdersCallBack += PlayCharacterOrderByServer;
         Managers.Network.BattleParticularCallBack -= GetParticularInfo;
         Managers.Network.BattleParticularCallBack += GetParticularInfo;
 
@@ -49,11 +49,10 @@ public class BattleSystem : MonoBehaviour
     {
         if (_infoArrived)
             return;
-        
+
         if (StartSelectOrder())
         {
             _selectCoroutine = StartCoroutine(SetSelectTime(PlayerData.Constants.SelectTime));
-            Managers.Network.Started = false;
         }
         if (_canSelect)
         {
@@ -64,10 +63,11 @@ public class BattleSystem : MonoBehaviour
     private void GetParticularInfo(stBattleParticularInfo info)
     {
         _infoArrived = true;
-
+        Managers.Battle.ResetBattle();
         UnityMainThreadDispatcher.Instance().Enqueue(() =>
         {
             DisableCharacterSelectTime();
+            StopCoroutine(_selectCoroutine);
             _nextTurn = null;
             string text = "";
             if (info.ParticularInfo == (ushort)ParticularInfo.Surrender)
@@ -104,10 +104,10 @@ public class BattleSystem : MonoBehaviour
     public void SetCharacterTurn(stBattleTurnInfo[] info)
     {
         CharacterTurn[] cTs = new CharacterTurn[6];
-        for (int i = 0; i < info.Length ; i++)
+        for (int i = 0; i < info.Length; i++)
         {
-            cTs[i].Id = info[i].Id;
-            cTs[i].IsPlayerCharacter = Managers.Data.IsPlayer1 == info[i].IsPlayer1;
+            cTs[i].Id = info[i].CharacterID;
+            cTs[i].IsPlayerCharacter = Managers.Battle.IsPlayer1 == info[i].IsPlayer1;
         }
 
         _battleUI.SetBattleOrderImages(cTs);
@@ -123,7 +123,6 @@ public class BattleSystem : MonoBehaviour
     private void DisableCharacterSelectTime()
     {
         _canSelect = false;
-        StopCoroutine(_selectCoroutine);
         SetCharactersOutline(_playerCharacters, OutlineState.None);
         SetCharactersOutline(_otherCharacters, OutlineState.None);
 
@@ -134,6 +133,7 @@ public class BattleSystem : MonoBehaviour
 
     private IEnumerator SetSelectTime(float time)
     {
+        Managers.Network.Started = false;
         float selectTime = time;
         EnableCharacterSelectTime();
         while (selectTime > 0)
@@ -142,9 +142,10 @@ public class BattleSystem : MonoBehaviour
             _battleUI.SetSelectTimeText(selectTime);
             yield return null;
         }
+        SetCharactersOutline(_playerCharacters, OutlineState.None);
 
         DisableCharacterSelectTime();
-        Managers.Network.TcpSendMessage<stBattleMyOrder>(GetPlayerOrder());
+        Managers.Network.TcpSendMessage<stBattlePlayerOrder>(GetPlayerOrder());
         selectTime = 0;
     }
     private void SelectCharacters()
@@ -181,13 +182,13 @@ public class BattleSystem : MonoBehaviour
         }
     }
 
-    public stBattleMyOrder GetPlayerOrder()
+    public stBattlePlayerOrder GetPlayerOrder()
     {
-        stBattleMyOrder info = new stBattleMyOrder();
-        info.MsgID = ServerData.MessageID.BattleMyOrder;
+        stBattlePlayerOrder info = new stBattlePlayerOrder();
+        info.MsgID = ServerData.MessageID.BattlePlayerOrderInfo;
         info.PacketSize = (ushort)Marshal.SizeOf(info);
         info.ID = Managers.Data.ID;
-        info.RoomID = Managers.Data.RoomID;
+        info.RoomID = (ushort)Managers.Battle.RoomID;
         info.CharactersOrder = new stBattleMyCharacterOrder[3];
         for (int i = 0; i < _playerCharacters.Length; i++)
         {
@@ -197,65 +198,63 @@ public class BattleSystem : MonoBehaviour
         return info;
     }
 
-    private void PlayCharacterOrderByServer(stBattleInfo battleInfo)
+    private void PlayCharacterOrderByServer(stBattleOrdersInfo actionInfo) // 한 턴의 정보를 받아 턴 진행
     {
-        for (int i = 0; i < battleInfo.Order.Length; i++)
+        for (int i = 0; i < actionInfo.Order.Length; i++)
         {
-            _orderQueue.Enqueue(battleInfo.Order[i]);
-            if (battleInfo.Order[i].IsMyCharacter)
+            _orderQueue.Enqueue(actionInfo.Order[i]); // 캐릭터의 행동 정보를 큐에 저장
+            if (actionInfo.Order[i].IsMyCharacter)
             {
-                _playerCharacters[battleInfo.Order[i].CharacterIndex].OrderState = battleInfo.Order[i].State;
+                _playerCharacters[actionInfo.Order[i].CharacterIndex].OrderState = actionInfo.Order[i].State;
             }
             else
             {
-                _otherCharacters[battleInfo.Order[i].CharacterIndex].OrderState = battleInfo.Order[i].State;
+                _otherCharacters[actionInfo.Order[i].CharacterIndex].OrderState = actionInfo.Order[i].State;
             }
         }
-        stBattleOrder order = _orderQueue.Dequeue();
-        SetOrder(order);
-        SetNextTurn(battleInfo.GameState);
+        stBattleCharacterOrder order = _orderQueue.Dequeue(); // 첫 번째 행동 Dequeue
+        SetOrder(order); // 첫 번째의 캐릭터 행동 지정
+        SetNextTurn(actionInfo.GameState); // 서버에서 수신한 게임 상태에 따라 다음 턴 상태 지정
     }
-
-   
-    private void SetNextOrder()
+    private void SetOrder(stBattleCharacterOrder order) // 캐릭터 행동 지정
     {
-        if (_orderQueue.Count > 0)
+        if (order.IsMyCharacter)
         {
-            stBattleOrder order = _orderQueue.Dequeue();
-            SetOrder(order);
+            _playerCharacters[order.CharacterIndex].SetCharacterOrder(order, _otherCharacters[order.TargetIndex], SetNextOrder);
+        }
+        else
+        {
+            _otherCharacters[order.CharacterIndex].SetCharacterOrder(order, _playerCharacters[order.TargetIndex], SetNextOrder);
+        }
+    }
+    private void SetNextOrder() // 다음 캐릭터의 행동
+    {
+        if (_orderQueue.Count > 0) // 다음 행동할 캐릭터가 있을 경우 
+        {
+            stBattleCharacterOrder order = _orderQueue.Dequeue(); 
+            SetOrder(order); // 캐릭터 행동
         }
         else
         {
             UnityMainThreadDispatcher.Instance().Enqueue(() =>
             {
-                _nextTurn?.Invoke();
+                _nextTurn?.Invoke(); // 더이상 행동할 캐릭터가 없을 경우 턴 마무리
             });
         }
     }
-    private void SetOrder(stBattleOrder order)
-    {
-        if (order.IsMyCharacter)
-        {
-            _playerCharacters[order.CharacterIndex].SetCharacterOrder(order, _otherCharacters[order.TargetIndex] ,SetNextOrder);
-        }
-        else
-        {
-            _otherCharacters[order.CharacterIndex].SetCharacterOrder(order, _playerCharacters[order.TargetIndex] ,SetNextOrder);
-        }
-    }
-    private void SetNextTurn(int gameState)
+    private void SetNextTurn(int gameState) // 다음 턴 상태 지정
     {
         _nextTurn = null;
         switch (gameState)
         {
-            case (int)GameState.ContinueSelect:
-                _nextTurn += () => StartCoroutine(SetSelectTime(PlayerData.Constants.SelectTime));
+            case (int)GameState.ContinueSelect: // 게임 계속 진행
+                _nextTurn += () => StartCoroutine(SetSelectTime(PlayerData.Constants.SelectTime)); 
                 break;
-            case (int)GameState.Player1Win:
-                _nextTurn += () => Managers.UI.ShowPopupUI<UI_BattleResultPopup>().SetText(!Managers.Data.IsPlayer1);
+            case (int)GameState.Player1Win: // 플레이어 1 승리 팝업 생성 및 게임 종료
+                _nextTurn += () => Managers.UI.ShowPopupUI<UI_BattleResultPopup>().SetText(!Managers.Battle.IsPlayer1);
                 break;
-            case (int)GameState.Player2Win:
-                _nextTurn += () => Managers.UI.ShowPopupUI<UI_BattleResultPopup>().SetText(Managers.Data.IsPlayer1);
+            case (int)GameState.Player2Win: // 플레이어 2 승리 팝업 생성 및 게임 종료
+                _nextTurn += () => Managers.UI.ShowPopupUI<UI_BattleResultPopup>().SetText(Managers.Battle.IsPlayer1);
                 break;
         }
     }
@@ -267,9 +266,6 @@ public class BattleSystem : MonoBehaviour
             characters[i].SetCharacterOutline(state);
         }
     }
-
-   
-
     public void OnOffPlayerOutline(bool on)
     {
         if (on)

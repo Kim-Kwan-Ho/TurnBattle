@@ -106,7 +106,7 @@ public class UI_BattlePopup : UI_Popup
         info.MsgID = ServerData.MessageID.BattleParticularInfo;
         info.PacketSize = (ushort)Marshal.SizeOf(info);
         info.ID = Managers.Data.ID;
-        info.RoomID = Managers.Data.RoomID;
+        info.RoomID = (ushort)Managers.Battle.RoomID;
         info.ParticularInfo = (ushort)ParticularInfo.Surrender;
         Managers.Network.TcpSendMessage<stBattleParticularInfo>(info);
         Managers.Battle.ResetBattle();

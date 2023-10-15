@@ -34,7 +34,7 @@ public class UI_PlayPopup : UI_Popup
     {
         GoldText,
         UpgradeText,
-        PowerText,
+        //PowerText,
 
     }
     enum PlayTab
@@ -82,7 +82,7 @@ public class UI_PlayPopup : UI_Popup
         GetObject((int)GameObjects.HomeClick).gameObject.SetActive(true);
         GetText((int)Texts.GoldText).text = Managers.Data.Gold.ToString();
         GetText((int)Texts.UpgradeText).text = Managers.Data.Token.ToString();
-        GetText((int)Texts.PowerText).text = Managers.Data.Power.ToString();
+        //GetText((int)Texts.PowerText).text = Managers.Data.Power.ToString();
         RefreshMainCharactersImage();
         _inven.RefreshSlot();
         _matchSystem.RefreshMainCharactersImage();

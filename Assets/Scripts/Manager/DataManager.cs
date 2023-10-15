@@ -12,65 +12,32 @@ using File = System.IO.File;
 public class DataManager
 {
     private Player _player = new Player();
-    Character[] characters = new Character[15];
 
-    public string ID // 이걸로 서버에서 찾아서 받아오게끔
-    {
-        get => _player.PlayerID; 
-        set => _player.PlayerID = value;
-    }
-
-    public string Name
-    {
-        get => _player.PlayerName;
-        set => _player.PlayerName = value;
-    }
+    public string ID => _player.ID;
 
     public UInt32 Gold
     {
-        get => _player.PlayerGold;
-        set => _player.PlayerGold = value;
+        get => _player.Gold;
     }
 
     public UInt32 Token
     {
         get => _player.UpgradeToken;
-        set => _player.UpgradeToken = value;
     }
 
-    public UInt32 Power
-    {
-        get => _player.Power; 
-        set => _player.Power = value;
-    }
 
     public Character[] MainCharacters
     {
-        get => _player.PlayerMainCharacters;
-        set => _player.PlayerMainCharacters = value;
+        get => _player.MainCharacters;
+        set => _player.MainCharacters = value;
     }
 
     public Dictionary<UInt16, Character> Characters
     {
-        get => _player.PlayerCharacters;
-        set => _player.PlayerCharacters = value;
+        get => _player.OwnedCharacters;
+        set => _player.OwnedCharacters = value;
     }
 
-    public ushort RoomID
-    {
-        get => _player.BattleRoomID;
-        set => _player.BattleRoomID = value;
-    }
-
-    public bool IsPlayer1
-    {
-        get => _player.IsPlayer1;
-        set => _player.IsPlayer1 = value;
-    }
-
-    public void Init()
-    {
-    }
 
     public void LoadPlayerInfo(stPlayerInfo playerInfo)
     {
@@ -80,21 +47,21 @@ public class DataManager
 
     private void SetPlayerInfo(stPlayerInfo playerInfo)
     {
-        _player.PlayerID = playerInfo.ID;
-        _player.PlayerPassword = playerInfo.Password;
-        _player.PlayerGold = playerInfo.Gold;
-        _player.UpgradeToken = playerInfo.Token;
+        _player.ID = playerInfo.ID;
+        _player.Password = playerInfo.Password;
+        _player.Gold = playerInfo.GoldAmount;
+        _player.UpgradeToken = playerInfo.TokenCount;
     }
 
     private void SetCharactersInfo(stPlayerInfo playerInfo)
     {
-        _player.PlayerMainCharacters = ChangeToPlayerCharacter(playerInfo.MainCharacters);
-        _player.PlayerCharacters =
-            ChangeToPlayerCharacter(playerInfo.Characters, playerInfo.ChsCount).ToDictionary(key => key.ChID, item => item);
+        _player.MainCharacters = ConvertToPlayerCharacters(playerInfo.MainCharacters);
+        _player.OwnedCharacters =
+            ConvertToPlayerCharacters(playerInfo.OwnedCharacters, playerInfo.CharacterCount).ToDictionary(key => key.ChID, item => item);
     }
 
 
-    private Character[] ChangeToPlayerCharacter(stCharacterInfo[] chInfos, ushort chCount = 3) 
+    private Character[] ConvertToPlayerCharacters(stCharacterInfo[] chInfos, ushort chCount = 3) 
     {
         Character[] chs = new Character[chCount];
 
@@ -107,10 +74,9 @@ public class DataManager
             chs[i].ChArmor = chInfos[i].ChArmor;
             chs[i].ChSpd = chInfos[i].ChSpd;
         }
-
         return chs;
     }
-    private stCharacterInfo[] ChangeToServerCharacter(Character[] chInfos, int chCount = 3)
+    private stCharacterInfo[] ConvertToServerCharacters(Character[] chInfos, int chCount = 3)
     {
         stCharacterInfo[] chs = new stCharacterInfo[chCount];
 
@@ -123,7 +89,6 @@ public class DataManager
             chs[i].ChArmor = chInfos[i].ChArmor;
             chs[i].ChSpd = chInfos[i].ChSpd;
         }
-
         return chs;
     }
     public void UpdatePlayerInfoToServer()
@@ -132,13 +97,13 @@ public class DataManager
 
         info.MsgID = ServerData.MessageID.PlayerInfo;
         info.PacketSize = (ushort)Marshal.SizeOf(typeof(stPlayerInfo));
-        info.ID = _player.PlayerID;
-        info.Password = _player.PlayerPassword;
-        info.Gold = _player.PlayerGold;
-        info.Token = _player.UpgradeToken;
-        info.MainCharacters = ChangeToServerCharacter(_player.PlayerMainCharacters);
-        info.Characters = ChangeToServerCharacter(_player.PlayerCharacters.Values.ToArray(), _player.PlayerCharacters.Count);
-        info.ChsCount = (ushort)_player.PlayerCharacters.Count;
+        info.ID = _player.ID;
+        info.Password = _player.Password;
+        info.GoldAmount = _player.Gold;
+        info.TokenCount = _player.UpgradeToken;
+        info.MainCharacters = ConvertToServerCharacters(_player.MainCharacters);
+        info.CharacterCount = (ushort)_player.OwnedCharacters.Count;
+        info.OwnedCharacters = ConvertToServerCharacters(_player.OwnedCharacters.Values.ToArray(), _player.OwnedCharacters.Count);
 
         Managers.Network.TcpSendMessage<stPlayerInfo>(info);
     }

@@ -28,7 +28,7 @@ public class NetworkManager
     private int _tempByteSize = 0;
 
     public Action<bool, string> LoginRegisterCallBack = null;
-    public Action<stBattleInfo> BattleCallBack = null;
+    public Action<stBattleOrdersInfo> BattleOrdersCallBack = null;
     public Action<stBattleParticularInfo> BattleParticularCallBack = null;
 
     public byte[] GetObjectToByte<T>(T str) where T : struct // 구조체 => Byte
@@ -181,7 +181,7 @@ public class NetworkManager
         else
         {
             Array.Clear(_tempBuffer, 0, _tempBuffer.Length);
-            Array.Copy(data, msgData.Length, _tempBuffer, 0, data.Length - (msgData.Length));// �ӽ� ���� ���ۿ� ���� �޽��� ����
+            Array.Copy(data, msgData.Length, _tempBuffer, 0, data.Length - (msgData.Length));
             _isTempByte = true;
             _tempByteSize = data.Length - (msgData.Length);
         }
@@ -192,13 +192,13 @@ public class NetworkManager
         if (_socketConnection == null)
             return;
 
-        if (Managers.Battle.BattleSystem != null)
+        if (Managers.Battle.RoomID != null)
         {
             stBattleParticularInfo info = new stBattleParticularInfo();
             info.MsgID = ServerData.MessageID.BattleParticularInfo;
             info.PacketSize = (ushort)Marshal.SizeOf(info);
             info.ID = Managers.Data.ID;
-            info.RoomID = Managers.Data.RoomID;
+            info.RoomID = (ushort)Managers.Battle.RoomID;
             info.ParticularInfo = (ushort)ParticularInfo.LogOut;
             TcpSendMessage<stBattleParticularInfo>(info);
         }
@@ -229,17 +229,16 @@ public class NetworkManager
     {
         switch (msgId)
         {
-            case ServerData.MessageID.LoginRegister:
+            case ServerData.MessageID.LoginRegister: // 로그인 실패 or 회원가입 성공여부 반환
             {
-
-                stLoginRegister register = GetObjectFromByte<stLoginRegister>(msgData);
-                if (register.IsLogin)
+                stLoginRegister info = GetObjectFromByte<stLoginRegister>(msgData);
+                if (info.IsLogin) // 로그인 정보는 실패만 반환
                 {
                     LoginRegisterCallBack?.Invoke(false, "Login Failed");
                 }
                 else
                 {
-                    if (register.Succeed)
+                    if (info.Succeed)
                     {
                         LoginRegisterCallBack?.Invoke(false, "Register Success");
                     }
@@ -250,18 +249,18 @@ public class NetworkManager
                 }
                 break;
             }
-            case ServerData.MessageID.PlayerInfo:
+            case ServerData.MessageID.PlayerInfo: // 로그인 성공 시 플레이어 정보 수신
             {
                 stPlayerInfo info = GetObjectFromByte<stPlayerInfo>(msgData);
-                Managers.Data.LoadPlayerInfo(info);
-                LoginRegisterCallBack?.Invoke(true, string.Empty);
+                Managers.Data.LoadPlayerInfo(info); // 수신한 정보 저장
+                LoginRegisterCallBack?.Invoke(true, string.Empty); // 로그인 성공 반환
                 break;
             }
-            case ServerData.MessageID.BattleRoomCharactersInfo:
+            case ServerData.MessageID.BattleRoomInfo: // 매치 성공 시 게임 룸 정보 수신
             {
-                Matched = true;
-                stBattleRoomCharactersInfo info = GetObjectFromByte<stBattleRoomCharactersInfo>(msgData);
-                Managers.Battle.RoomCharactersInfo = info;
+                Matched = true;  // 매치 성공
+                stBattleRoomInfo info = GetObjectFromByte<stBattleRoomInfo>(msgData);
+                Managers.Battle.SetBattleRoomInfo(info); // 게임 룸 정보 설정
                 break;
             }
             case ServerData.MessageID.BattleStart:
@@ -270,10 +269,10 @@ public class NetworkManager
                 Started = true;
                 break;
             }
-            case ServerData.MessageID.BattleInfo:
+            case ServerData.MessageID.BattleOrdersInfo:
             {
-                stBattleInfo info = GetObjectFromByte<stBattleInfo>(msgData);
-                BattleCallBack?.Invoke(info);
+                stBattleOrdersInfo info = GetObjectFromByte<stBattleOrdersInfo>(msgData);
+                BattleOrdersCallBack?.Invoke(info);
                 break;
             }
             case ServerData.MessageID.BattleParticularInfo:

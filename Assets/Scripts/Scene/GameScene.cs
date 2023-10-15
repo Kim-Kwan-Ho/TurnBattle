@@ -11,7 +11,7 @@ public class GameScene : BaseScene
 
         SceneType = Define.Scene.Game;
         Managers.UI.ShowPopupUI<UI_PlayPopup>();
-        if (IsNewAccount())
+        if (IsNewAccount()) // 신규계정일 경우 카드선택 팝업 생성
         {
             Managers.UI.ShowPopupUI<UI_CardSelectionPopup>();
         }
@@ -19,11 +19,11 @@ public class GameScene : BaseScene
     }
 
 
-    private bool IsNewAccount()
+    private bool IsNewAccount() // 캐릭터를 보유하고 있는지에 따라 신규계정 확인
     {
-        for (int i = 0; i < Managers.Data.MainCharacters.Length; i++)
+        for (int i = 0; i < Managers.Data.MainCharacters.Length; i++) 
         {
-            if (Managers.Data.MainCharacters[i].ChID != 0)
+            if (Managers.Data.MainCharacters[i].ChID != 0) 
                 return false;
         }
 
@@ -32,5 +32,4 @@ public class GameScene : BaseScene
 
         return true;
     }
-
 }

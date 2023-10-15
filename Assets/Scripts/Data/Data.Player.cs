@@ -10,27 +10,19 @@ namespace PlayerData
     public static class Constants
     {
         public const float SelectTime = 10;
+        public const int MainCharacterCount = 3;
 
 
     }
     public class Player
     {
-        public string PlayerID;
-        public string PlayerPassword;
-        public string PlayerName;
-        public UInt32 PlayerGold;
-        public UInt32 UpgradeToken;
-        public UInt32 Power;
-        public Character[] PlayerMainCharacters;
-        public Dictionary<UInt16, Character> PlayerCharacters;
-        public ushort BattleRoomID;
-        public bool IsPlayer1;
-        public Player()
-        {
-            PlayerName = "ChangeName";
-            PlayerMainCharacters = new Character[3];
-            PlayerCharacters = new Dictionary<UInt16, Character>();
-        }
+        public string ID { get; set; }
+        public string Password { get; set; }
+        public UInt32 Gold { get; set; } // 재화
+        public UInt32 UpgradeToken { get; set; } // 캐릭터 레벨업 토큰
+        public Character[] MainCharacters { get; set; } = new Character[Constants.MainCharacterCount]; // 대표 캐릭터
+        public Dictionary<UInt16, Character> OwnedCharacters { get; set; } = new Dictionary<UInt16, Character>(); 
+        // 보유중인 캐릭터, <캐릭터 아이디, 캐릭터> 
     }
 
     public enum CharacterType

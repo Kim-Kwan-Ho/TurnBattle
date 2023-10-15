@@ -24,10 +24,6 @@ public class Managers : MonoBehaviour
 
     private DataManager _data = new DataManager();
     public static DataManager Data { get { return Instance._data; } }
-
-    private MyGameManager _game = new MyGameManager();
-    public static MyGameManager Game { get { return Instance._game; } }
-
     private NetworkManager _network = new NetworkManager();
     public static NetworkManager Network { get { return Instance._network; } }
 
@@ -49,7 +45,6 @@ public class Managers : MonoBehaviour
             DontDestroyOnLoad(go);
             Application.targetFrameRate = 60;
 
-            s_instance._data.Init();
             s_instance._scene.Init();
             s_instance._resource.Init();
             s_instance._network.Init();

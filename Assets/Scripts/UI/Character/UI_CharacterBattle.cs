@@ -108,7 +108,7 @@ public class UI_CharacterBattle : UI_Base
     {
         GetObject((int)GameObjects.Defense).SetActive(false);
         GetObject((int)GameObjects.Attack).SetActive(false);
-        DeActiveButton();
+        GetObject((int)GameObjects.Buttons).SetActive(false);
     }
 
 }

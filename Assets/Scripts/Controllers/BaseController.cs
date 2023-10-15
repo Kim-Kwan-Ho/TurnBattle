@@ -74,7 +74,7 @@ public class BaseController : MonoBehaviour
 
     }
 
-    public virtual void SetCharacterOrder(stBattleOrder order, BaseController orderTarget ,Action nextAction)
+    public virtual void SetCharacterOrder(stBattleCharacterOrder order, BaseController orderTarget ,Action nextAction)
     {
         if (IsDeath())
         {
@@ -83,13 +83,7 @@ public class BaseController : MonoBehaviour
         }
         switch (order.State)
         {
-            //case (ushort)CharacterState.None:
-            //    nextAction?.Invoke();
-            //    break;
-            //case (ushort)CharacterState.Defense:
-            //    //애니메이션 동작
-            //    nextAction?.Invoke();
-            //    break;
+
             case (ushort)CharacterState.Attack:
                 if (!orderTarget.IsDeath())
                     AttackTarget(orderTarget, nextAction);

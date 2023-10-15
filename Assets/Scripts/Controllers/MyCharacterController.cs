@@ -33,8 +33,16 @@ public class MyCharacterController : BaseController
 
     public override void DeSelectCharacter()
     {
-        _battleSystem.OnOffPlayerOutline(true);
+        if (_selectState == CharacterState.SetAttackTarget)
+        {
+            _outline.SetOutlineColor(OutlineState.CharacterSelected);
+        }
+        else
+        {
+            _battleSystem.OnOffPlayerOutline(true);
+        }
     }
+
 
     public void SelectTarget(OtherCharacterController otherCharacter)
     {
