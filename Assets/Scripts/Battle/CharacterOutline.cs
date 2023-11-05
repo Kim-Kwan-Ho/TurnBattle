@@ -14,7 +14,7 @@ public class CharacterOutline : MonoBehaviour
         _spr = GetComponent<SpriteRenderer>();
     }
 
-    public void SetOutlineColor(OutlineState state)
+    public void UpdateOutline(OutlineState state)
     {
         switch (state)
         {

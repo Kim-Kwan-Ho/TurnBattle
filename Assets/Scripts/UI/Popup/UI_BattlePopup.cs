@@ -1,9 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using PlayerData;
 using System.Runtime.InteropServices;
-using ServerData;
+using Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -41,8 +40,9 @@ public class UI_BattlePopup : UI_Popup
         CharacterBackImage6,
     }
     private TextMeshProUGUI _timeText = null;
-    private Image[] _characterImgs = new Image[6];
-    private Image[] _characterBackImgs = new Image[6];
+    private const int Index = 6;
+    private Image[] _characterImgs = new Image[Index];
+    private Image[] _characterBackImgs = new Image[Index];
 
     public override bool Init()
     {
@@ -63,7 +63,7 @@ public class UI_BattlePopup : UI_Popup
         for (int i = 0; i < _characterImgs.Length; i++)
         {
             _characterImgs[i] = GetImage(i);
-            _characterBackImgs[i] = GetImage(i + 6);
+            _characterBackImgs[i] = GetImage(i + Index);
         }
 
 
@@ -103,7 +103,7 @@ public class UI_BattlePopup : UI_Popup
     private void SurrenderGame()
     {
         stBattleParticularInfo info = new stBattleParticularInfo();
-        info.MsgID = ServerData.MessageID.BattleParticularInfo;
+        info.MsgID = MessageID.BattleParticularInfo;
         info.PacketSize = (ushort)Marshal.SizeOf(info);
         info.ID = Managers.Data.ID;
         info.RoomID = (ushort)Managers.Battle.RoomID;

@@ -7,8 +7,7 @@ using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System;
 using System.IO;
-using ServerData;
-using PlayerData;
+using Data;
 
 public class NetworkManager
 {
@@ -18,12 +17,11 @@ public class NetworkManager
 
     public string Ip = "127.0.0.1";
     public int Port = 9001;
-    public bool Logined = false;
     public bool Matched = false;
     public bool Started = false;
     private bool _clientReady = false;
-    private byte[] _buffer = new byte[ServerData.Constants.BufferSize];
-    private byte[] _tempBuffer = new byte[ServerData.Constants.TempBufferSize];
+    private byte[] _buffer = new byte[Constants.BufferSize];
+    private byte[] _tempBuffer = new byte[Constants.TempBufferSize];
     private bool _isTempByte = false;
     private int _tempByteSize = 0;
 
@@ -149,7 +147,7 @@ public class NetworkManager
     }
     private void OnIncomingData(byte[] data)
     {
-        if (data.Length < ServerData.Constants.HeaderSize)
+        if (data.Length < Constants.HeaderSize)
         {
             Array.Copy(data, 0, _tempBuffer, _tempByteSize, data.Length);
             _isTempByte = true;
@@ -157,7 +155,7 @@ public class NetworkManager
             return;
         }
 
-        byte[] headerDataByte = new byte[ServerData.Constants.HeaderSize];
+        byte[] headerDataByte = new byte[Constants.HeaderSize];
         Array.Copy(data, 0, headerDataByte, 0, headerDataByte.Length);
         stHeader headerData = GetObjectFromByte<stHeader>(headerDataByte);
         if (headerData.PacketSize > data.Length)
@@ -195,7 +193,7 @@ public class NetworkManager
         if (Managers.Battle.RoomID != null)
         {
             stBattleParticularInfo info = new stBattleParticularInfo();
-            info.MsgID = ServerData.MessageID.BattleParticularInfo;
+            info.MsgID = MessageID.BattleParticularInfo;
             info.PacketSize = (ushort)Marshal.SizeOf(info);
             info.ID = Managers.Data.ID;
             info.RoomID = (ushort)Managers.Battle.RoomID;
@@ -229,7 +227,7 @@ public class NetworkManager
     {
         switch (msgId)
         {
-            case ServerData.MessageID.LoginRegister: // 로그인 실패 or 회원가입 성공여부 반환
+            case MessageID.LoginRegister: // 로그인 실패 or 회원가입 성공여부 반환
             {
                 stLoginRegister info = GetObjectFromByte<stLoginRegister>(msgData);
                 if (info.IsLogin) // 로그인 정보는 실패만 반환
@@ -249,33 +247,33 @@ public class NetworkManager
                 }
                 break;
             }
-            case ServerData.MessageID.PlayerInfo: // 로그인 성공 시 플레이어 정보 수신
+            case MessageID.PlayerInfo: // 로그인 성공 시 플레이어 정보 수신
             {
                 stPlayerInfo info = GetObjectFromByte<stPlayerInfo>(msgData);
                 Managers.Data.LoadPlayerInfo(info); // 수신한 정보 저장
                 LoginRegisterCallBack?.Invoke(true, string.Empty); // 로그인 성공 반환
                 break;
             }
-            case ServerData.MessageID.BattleRoomInfo: // 매치 성공 시 게임 룸 정보 수신
+            case MessageID.BattleRoomInfo: // 매치 성공 시 게임 룸 정보 수신
             {
                 Matched = true;  // 매치 성공
                 stBattleRoomInfo info = GetObjectFromByte<stBattleRoomInfo>(msgData);
                 Managers.Battle.SetBattleRoomInfo(info); // 게임 룸 정보 설정
                 break;
             }
-            case ServerData.MessageID.BattleStart:
+            case MessageID.BattleStart:
             {
                 stBattleStart info = GetObjectFromByte<stBattleStart>(msgData);
                 Started = true;
                 break;
             }
-            case ServerData.MessageID.BattleOrdersInfo:
+            case MessageID.BattleOrdersInfo:
             {
                 stBattleOrdersInfo info = GetObjectFromByte<stBattleOrdersInfo>(msgData);
                 BattleOrdersCallBack?.Invoke(info);
                 break;
             }
-            case ServerData.MessageID.BattleParticularInfo:
+            case MessageID.BattleParticularInfo:
             {
                 stBattleParticularInfo info = GetObjectFromByte<stBattleParticularInfo>(msgData);
                 BattleParticularCallBack?.Invoke(info);
@@ -284,4 +282,10 @@ public class NetworkManager
         }
     }
 
+    public void ResetBattle()
+    {
+        Matched = false;
+        Started = false;
+        BattleOrdersCallBack = null;
+    }
 }

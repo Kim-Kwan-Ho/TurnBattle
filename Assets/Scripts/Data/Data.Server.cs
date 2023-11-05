@@ -3,11 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEngine;
-using PlayerData;
 using JetBrains.Annotations;
 using System.Runtime.Serialization;
 
-namespace ServerData
+namespace Data
 {
     public static class Constants
     {
@@ -21,7 +20,7 @@ namespace ServerData
         public const int MaxCharacterCount = 50;
         public const UInt16 PlayerRegisterGold = 1500;
         public const UInt16 PlayerRegisterToken = 2000;
-
+        public const float SelectTime = 10;
     }
     public static class MessageID // 헤더 메시지 정보
     {
@@ -55,9 +54,9 @@ namespace ServerData
         public UInt16 PacketSize;
         [MarshalAs(UnmanagedType.Bool, SizeConst = 1)] // 로그인 or 회원가입
         public bool IsLogin;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)ServerData.Constants.MaxNameByte)]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)Constants.MaxNameByte)]
         public string ID;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)ServerData.Constants.MaxPasswordByte)]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)Constants.MaxPasswordByte)]
         public string Password;
         [MarshalAs(UnmanagedType.Bool, SizeConst = 1)] // 로그인 성공 여부 ( 서버에서 반환 )
         public bool Succeed;
@@ -71,19 +70,19 @@ namespace ServerData
         public UInt16 MsgID;
         [MarshalAs(UnmanagedType.U2, SizeConst = 2)]
         public UInt16 PacketSize;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)(ServerData.Constants.MaxNameByte))]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)(Constants.MaxNameByte))]
         public string ID;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)ServerData.Constants.MaxPasswordByte)]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)Constants.MaxPasswordByte)]
         public string Password;
         [MarshalAs(UnmanagedType.U4, SizeConst = 4)]
         public UInt32 GoldAmount;
         [MarshalAs(UnmanagedType.U4, SizeConst = 4)]
         public UInt32 TokenCount;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = ServerData.Constants.MainCharacterCount)] // 대표 캐릭터
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = Constants.MainCharacterCount)] // 대표 캐릭터
         public stCharacterInfo[] MainCharacters;
         [MarshalAs(UnmanagedType.U2, SizeConst = 2)]
         public UInt16 CharacterCount;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = ServerData.Constants.MaxCharacterCount)] // 보유 캐릭터
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = Constants.MaxCharacterCount)] // 보유 캐릭터
         public stCharacterInfo[] OwnedCharacters;
         public stPlayerInfo(string id, string password) // 회원가입 시 Id, Password를 바탕으로 정보생성
         {
@@ -125,7 +124,7 @@ namespace ServerData
         public UInt16 MsgID;
         [MarshalAs(UnmanagedType.U2, SizeConst = 2)]
         public UInt16 PacketSize;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)(ServerData.Constants.MaxNameByte))]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)(Constants.MaxNameByte))]
         public string ID; // 나의 아이디
         [MarshalAs(UnmanagedType.Bool, SizeConst = 1)]
         public bool Matching; // true => 매치 시작, false => 매치 취소
@@ -142,15 +141,15 @@ namespace ServerData
         public UInt16 PacketSize;
         [MarshalAs(UnmanagedType.U2, SizeConst = 2)]
         public UInt16 RoomID;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)(ServerData.Constants.MaxNameByte))]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)(Constants.MaxNameByte))]
         public string ID;
         [MarshalAs(UnmanagedType.Bool, SizeConst = 1)]
         public bool IsPlayer1;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = ServerData.Constants.MainCharacterCount)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = Constants.MainCharacterCount)]
         public stCharacterInfo[] PlayerCharacters;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = ServerData.Constants.MainCharacterCount)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = Constants.MainCharacterCount)]
         public stCharacterInfo[] OtherCharacters;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = ServerData.Constants.MainCharacterCount * 2)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = Constants.MainCharacterCount * 2)]
         public stBattleTurnInfo[] BattleTurn;
     }
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -170,7 +169,7 @@ namespace ServerData
         [MarshalAs(UnmanagedType.U2, SizeConst = 2)]
         public UInt16 PacketSize;
 
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)(ServerData.Constants.MaxNameByte))]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)(Constants.MaxNameByte))]
         public string ID;
         [MarshalAs(UnmanagedType.U2, SizeConst = 2)]
         public UInt16 RoomID;
@@ -197,7 +196,7 @@ namespace ServerData
         [MarshalAs(UnmanagedType.U2, SizeConst = 2)]
         public UInt16 PacketSize;
 
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)(ServerData.Constants.MaxNameByte))]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)(Constants.MaxNameByte))]
         public string ID;
         [MarshalAs(UnmanagedType.U2, SizeConst = 2)]
         public UInt16 RoomID;
@@ -255,7 +254,7 @@ namespace ServerData
         public UInt16 MsgID;
         [MarshalAs(UnmanagedType.U2, SizeConst = 2)]
         public UInt16 PacketSize;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)(ServerData.Constants.MaxNameByte))]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)(Constants.MaxNameByte))]
         public string ID;
         [MarshalAs(UnmanagedType.U2, SizeConst = 2)]
         public UInt16 RoomID;

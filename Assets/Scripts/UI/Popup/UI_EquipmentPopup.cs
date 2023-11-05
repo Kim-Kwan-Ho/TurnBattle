@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using PlayerData;
+using Data;
 using UnityEngine;
 
 public class UI_EquipmentPopup : UI_Popup

@@ -2,8 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using ServerData;
-using PlayerData;
+using Data;
 public class BattleManager 
 {
     private BattleSystem _battleSystem;
@@ -25,10 +24,10 @@ public class BattleManager
 
     }
 
-    public void MakeBattleRoom()
+    public void MakeBattleRoom(BattleSystem battleSystem)
     {
-        GameObject go = Managers.Resource.Instantiate(("Battle/BattleSystem"));
-        _battleSystem = go.GetComponent<BattleSystem>();
+        
+        _battleSystem = battleSystem;
         _battleSystem.SetPlayerCharacters(_roomInfo.PlayerCharacters);
         _battleSystem.SetOtherPlayerCharacters(_roomInfo.OtherCharacters);
         _battleSystem.SetCharacterTurn(_roomInfo.BattleTurn);
@@ -40,9 +39,7 @@ public class BattleManager
         _roomID = null;
         _isPlayer1 = false;
         _battleSystem = null;
-        Managers.Network.Matched = false;
-        Managers.Network.Started = false;
-        Managers.Network.BattleOrdersCallBack = null;
+        Managers.Network.ResetBattle();
     }
 
 

@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using PlayerData;
+using Data;
 
 public class UI_CardSelectionPopup : UI_Popup
 {
@@ -59,7 +59,7 @@ public class UI_CardSelectionPopup : UI_Popup
     {
         if (card.SelectToggle.isOn) // 선택된 카드가 3개 이상 있을 시 false 반환, 3개보다 적을 경우 List에 삽입
         {
-            if (_selectedCharacters.Count >= 3)
+            if (_selectedCharacters.Count >= Constants.MainCharacterCount)
             {
                 card.SelectToggle.isOn = false;
                 return;
@@ -75,8 +75,8 @@ public class UI_CardSelectionPopup : UI_Popup
                 _selectedCharacters.Remove(card.CardCharacter);
         }
         // 선택된 카드가 3개일시 Confirm버튼 활성화
-        GetButton((int)Buttons.ConfirmButton).gameObject.SetActive(_selectedCharacters.Count == 3); 
-        GetText((int)Texts.CharacterCountText).text = $"({_selectedCharacters.Count}/3)";
+        GetButton((int)Buttons.ConfirmButton).gameObject.SetActive(_selectedCharacters.Count == Constants.MainCharacterCount); 
+        GetText((int)Texts.CharacterCountText).text = $"({_selectedCharacters.Count}/{Constants.MainCharacterCount})";
     }
 
     private void ConfirmCharacterCards() // 선택한 캐릭터 카드 확정 및 서버에 업로드

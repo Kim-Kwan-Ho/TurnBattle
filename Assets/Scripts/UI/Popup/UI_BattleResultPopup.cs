@@ -1,8 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using PlayerData;
-using ServerData;
+using Data;
 using UnityEngine;
 
 public class UI_BattleResultPopup : UI_Popup
@@ -37,10 +36,8 @@ public class UI_BattleResultPopup : UI_Popup
     {
         GetText((int)Texts.ResultText).text = text;
     }
-    public void GoHome()
+    private void GoHome()
     {
-
-        //Managers.Battle.ResetBattle();
         Managers.UI.CloseAllPopupUI();
         Managers.Scene.ChangeScene(Define.Scene.Base, true);
     }

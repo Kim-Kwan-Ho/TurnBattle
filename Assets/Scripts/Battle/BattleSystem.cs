@@ -4,8 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using UnityEngine;
-using ServerData;
-using PlayerData;
+using Data;
 using PimDeWitte.UnityMainThreadDispatcher;
 
 public class BattleSystem : MonoBehaviour
@@ -42,7 +41,6 @@ public class BattleSystem : MonoBehaviour
         Managers.Network.BattleOrdersCallBack += PlayCharacterOrderByServer;
         Managers.Network.BattleParticularCallBack -= GetParticularInfo;
         Managers.Network.BattleParticularCallBack += GetParticularInfo;
-
     }
 
     private void Update()
@@ -52,7 +50,7 @@ public class BattleSystem : MonoBehaviour
 
         if (StartSelectOrder())
         {
-            _selectCoroutine = StartCoroutine(SetSelectTime(PlayerData.Constants.SelectTime));
+            _selectCoroutine = StartCoroutine(SetSelectTime(Constants.SelectTime));
         }
         if (_canSelect)
         {
@@ -185,7 +183,7 @@ public class BattleSystem : MonoBehaviour
     public stBattlePlayerOrder GetPlayerOrder()
     {
         stBattlePlayerOrder info = new stBattlePlayerOrder();
-        info.MsgID = ServerData.MessageID.BattlePlayerOrderInfo;
+        info.MsgID = MessageID.BattlePlayerOrderInfo;
         info.PacketSize = (ushort)Marshal.SizeOf(info);
         info.ID = Managers.Data.ID;
         info.RoomID = (ushort)Managers.Battle.RoomID;
@@ -220,11 +218,11 @@ public class BattleSystem : MonoBehaviour
     {
         if (order.IsMyCharacter)
         {
-            _playerCharacters[order.CharacterIndex].SetCharacterOrder(order, _otherCharacters[order.TargetIndex], SetNextOrder);
+            _playerCharacters[order.CharacterIndex].ExecuteCharacterAction(order, _otherCharacters[order.TargetIndex], SetNextOrder);
         }
         else
         {
-            _otherCharacters[order.CharacterIndex].SetCharacterOrder(order, _playerCharacters[order.TargetIndex], SetNextOrder);
+            _otherCharacters[order.CharacterIndex].ExecuteCharacterAction(order, _playerCharacters[order.TargetIndex], SetNextOrder);
         }
     }
     private void SetNextOrder() // 다음 캐릭터의 행동
@@ -248,7 +246,7 @@ public class BattleSystem : MonoBehaviour
         switch (gameState)
         {
             case (int)GameState.ContinueSelect: // 게임 계속 진행
-                _nextTurn += () => StartCoroutine(SetSelectTime(PlayerData.Constants.SelectTime)); 
+                _nextTurn += () => StartCoroutine(SetSelectTime(Constants.SelectTime)); 
                 break;
             case (int)GameState.Player1Win: // 플레이어 1 승리 팝업 생성 및 게임 종료
                 _nextTurn += () => Managers.UI.ShowPopupUI<UI_BattleResultPopup>().SetText(!Managers.Battle.IsPlayer1);
@@ -259,7 +257,7 @@ public class BattleSystem : MonoBehaviour
         }
     }
 
-    private void SetCharactersOutline(BaseController[] characters, OutlineState state)
+    private void SetCharactersOutline(BaseCharacterController[] characters, OutlineState state)
     {
         for (int i = 0; i < characters.Length; i++)
         {

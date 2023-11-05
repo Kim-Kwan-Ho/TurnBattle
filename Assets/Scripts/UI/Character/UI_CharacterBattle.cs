@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using PlayerData;
+using Data;
 using UnityEngine;
 
 public class UI_CharacterBattle : UI_Base
@@ -25,14 +25,14 @@ public class UI_CharacterBattle : UI_Base
         CancelButton
     }
 
-    private BaseController _chController = null;
+    private BaseCharacterController _chController = null;
 
     public override bool Init()
     {
         if (base.Init() == false)
             return false;
 
-        _chController = GetComponentInParent<BaseController>();
+        _chController = GetComponentInParent<BaseCharacterController>();
         BindImage(typeof(Images));
         BindButton(typeof(Buttons));
         BindObject(typeof(GameObjects));

@@ -1,13 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using PlayerData;
 using UnityEngine;
-using ServerData;
+using Data;
 using Unity.VisualScripting;
 using PimDeWitte.UnityMainThreadDispatcher;
 
-public class BaseController : MonoBehaviour
+public class BaseCharacterController : MonoBehaviour
 {
     [Header("Components")]
     private SpriteRenderer _spr = null;
@@ -74,7 +73,7 @@ public class BaseController : MonoBehaviour
 
     }
 
-    public virtual void SetCharacterOrder(stBattleCharacterOrder order, BaseController orderTarget ,Action nextAction)
+    public virtual void ExecuteCharacterAction(stBattleCharacterOrder order, BaseCharacterController orderTarget ,Action nextAction)
     {
         if (IsDeath())
         {
@@ -98,7 +97,7 @@ public class BaseController : MonoBehaviour
         }
     }
 
-    private void AttackTarget(BaseController target, Action nexAction)
+    private void AttackTarget(BaseCharacterController target, Action nexAction)
     {
         UnityMainThreadDispatcher.Instance().Enqueue(() =>
         {
@@ -107,7 +106,7 @@ public class BaseController : MonoBehaviour
     }
 
 
-    private IEnumerator MoveToTarget(BaseController target, Action nextAction)
+    private IEnumerator MoveToTarget(BaseCharacterController target, Action nextAction)
     {
         Vector3 targetPos = target.gameObject.transform.position;
         float time = 0;
@@ -190,11 +189,11 @@ public class BaseController : MonoBehaviour
     {
         if (IsDeath())
         {
-            _outline.SetOutlineColor(OutlineState.None);
+            _outline.UpdateOutline(OutlineState.None);
         }
         else
         {
-            _outline.SetOutlineColor(state);
+            _outline.UpdateOutline(state);
         }
     }
 }

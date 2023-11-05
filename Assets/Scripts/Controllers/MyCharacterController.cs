@@ -1,12 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using PlayerData;
-using ServerData;
+using Data;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class MyCharacterController : BaseController
+public class MyCharacterController : BaseCharacterController
 {
     private UInt16 _targetIndex = 0;
 
@@ -21,7 +20,6 @@ public class MyCharacterController : BaseController
     protected override void Start()
     {
         _battleSystem = GetComponentInParent<BattleSystem>();
-            
     }
 
     public void SelectCharacter()
@@ -35,7 +33,7 @@ public class MyCharacterController : BaseController
     {
         if (_selectState == CharacterState.SetAttackTarget)
         {
-            _outline.SetOutlineColor(OutlineState.CharacterSelected);
+            _outline.UpdateOutline(OutlineState.CharacterSelected);
         }
         else
         {

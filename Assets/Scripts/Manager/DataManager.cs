@@ -3,8 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using PlayerData;
-using ServerData;
+using Data;
 using UnityEditor;
 using UnityEngine;
 using File = System.IO.File;
@@ -95,7 +94,7 @@ public class DataManager
     {
         stPlayerInfo info = new stPlayerInfo();
 
-        info.MsgID = ServerData.MessageID.PlayerInfo;
+        info.MsgID = MessageID.PlayerInfo;
         info.PacketSize = (ushort)Marshal.SizeOf(typeof(stPlayerInfo));
         info.ID = _player.ID;
         info.Password = _player.Password;

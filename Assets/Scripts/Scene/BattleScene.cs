@@ -1,4 +1,4 @@
-using ServerData;
+using  Data;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -11,12 +11,13 @@ public class BattleScene : BaseScene
     {
         if (base.Init() == false)
             return false;
-        Managers.Battle.MakeBattleRoom();
+
+        GameObject go = Managers.Resource.Instantiate(("Battle/BattleSystem"));
+        Managers.Battle.MakeBattleRoom(go.GetComponent<BattleSystem>());
         SceneType = Define.Scene.Battle;
-        
         stBattleReady ready = new stBattleReady
         {
-            MsgID = ServerData.MessageID.BattleReady,
+            MsgID = MessageID.BattleReady,
             PacketSize = (ushort)Marshal.SizeOf(typeof(stBattleReady)),
             ID = Managers.Data.ID,
             RoomID = (ushort)Managers.Battle.RoomID,

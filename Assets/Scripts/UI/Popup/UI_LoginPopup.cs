@@ -7,7 +7,7 @@ using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
-using ServerData;
+using Data;
 using static Define;
 
 public class UI_LoginPopup : UI_Popup

@@ -5,15 +5,8 @@ using System.Runtime.Serialization;
 using JetBrains.Annotations;
 using UnityEngine;
 
-namespace PlayerData
+namespace Data
 {
-    public static class Constants
-    {
-        public const float SelectTime = 10;
-        public const int MainCharacterCount = 3;
-
-
-    }
     public class Player
     {
         public string ID { get; set; }

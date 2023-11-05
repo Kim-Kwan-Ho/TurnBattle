@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEngine;
-using ServerData;
+using Data;
 using UnityEngine.Networking.Match;
 using static Define;
 
@@ -46,42 +46,42 @@ public class UI_MatchSystem : UI_Base
         BindText(typeof(Texts));
         BindObject(typeof(GameObjects));
 
-        _matchInfo.MsgID = ServerData.MessageID.MatchPlayerInfo;
+        _matchInfo.MsgID = MessageID.MatchPlayerInfo;
         _matchInfo.PacketSize = (ushort)Marshal.SizeOf(typeof(stMatchPlayerInfo));
         _matchInfo.ID = Managers.Data.ID;
 
         GetObject((int)GameObjects.MatchWaitingPanel).SetActive(false);
-        GetButton((int)Buttons.MatchButton).gameObject.BindEvent(Match);
-        GetButton((int)Buttons.CancelMatchButton).gameObject.BindEvent(CancelMatch);
+        GetButton((int)Buttons.MatchButton).gameObject.BindEvent(StartMatching);
+        GetButton((int)Buttons.CancelMatchButton).gameObject.BindEvent(StopMatching);
 
         return true;
     }
 
-    private void Match()
+    private void StartMatching()
     {
         _isMatching =  true;
         _matchInfo.Matching = true;
         Managers.Network.TcpSendMessage<stMatchPlayerInfo>(_matchInfo);
         GetObject((int)GameObjects.MatchWaitingPanel).SetActive(true);
         _matchingTime = 0;
-
     }
 
-    private void CancelMatch()
+    private void StopMatching()
     {
         _isMatching = false;
         _matchInfo.Matching = false;
         Managers.Network.TcpSendMessage<stMatchPlayerInfo>(_matchInfo);
         GetObject((int)GameObjects.MatchWaitingPanel).SetActive(false);
-
     }
 
     public void RefreshMainCharactersImage()
     {
-            GetImage((int)Images.Character1Image).sprite = Managers.Resource.Load<Sprite>($"Sprites/Characters/Main/{Managers.Data.MainCharacters[0].ChID}");
-            GetImage((int)Images.Character2Image).sprite = Managers.Resource.Load<Sprite>($"Sprites/Characters/Main/{Managers.Data.MainCharacters[1].ChID}");
-            GetImage((int)Images.Character3Image).sprite = Managers.Resource.Load<Sprite>($"Sprites/Characters/Main/{Managers.Data.MainCharacters[2].ChID}");
-
+        GetImage((int)Images.Character1Image).sprite =
+            Managers.Resource.Load<Sprite>($"Sprites/Characters/Main/{Managers.Data.MainCharacters[0].ChID}");
+        GetImage((int)Images.Character2Image).sprite =
+            Managers.Resource.Load<Sprite>($"Sprites/Characters/Main/{Managers.Data.MainCharacters[1].ChID}");
+        GetImage((int)Images.Character3Image).sprite =
+            Managers.Resource.Load<Sprite>($"Sprites/Characters/Main/{Managers.Data.MainCharacters[2].ChID}");
     }
 
     private void Update()
